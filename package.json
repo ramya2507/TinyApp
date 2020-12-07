@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/ramya2507/TinyApp/issues"
   },
-  "homepage": "https://github.com/ramya2507/TinyApp#readme"
+  "homepage": "https://github.com/ramya2507/TinyApp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
