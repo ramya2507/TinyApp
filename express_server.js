@@ -14,7 +14,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 //function to generate random string for short url
 function generateRandomString() {
-  return Math.random.toString(36).slice(2,8);
+  return Math.random().toString(36).slice(2,8);
 };
 
 app.get('/', (req, resp) => {
@@ -30,18 +30,27 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-app.post('/urls', (req, res) => {
-  console.log(req.body);
-  res.send('Ok');
-});
-
+//Renders form to enter long url
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
 });
 
+//redirecting to long URLs to the corresponding short URL
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
+
+//Displays short and corresponding long URLS
 app.get('/urls/:shortURL',(req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL : urlDatabase[req.params.shortURL]};
   res.render('urls_show', templateVars);
+});
+
+app.post('/urls', (req, res) => {
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect(`urls/${shortURL}`); 
 });
 
 app.get('/hello', (req, resp) => {
