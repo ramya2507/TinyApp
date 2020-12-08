@@ -2,11 +2,19 @@ const express = require('express');
 const app = express();
 const PORT = 8080; //default port
 
-app.set('view engine','ejs') //EJS as templating engine 
+app.set('view engine','ejs'); //EJS as templating engine
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
+};
+
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
+
+//function to generate random string for short url
+function generateRandomString() {
+  return Math.random.toString(36).slice(2,8);
 };
 
 app.get('/', (req, resp) => {
@@ -22,16 +30,25 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
+app.post('/urls', (req, res) => {
+  console.log(req.body);
+  res.send('Ok');
+});
+
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new');
+});
+
 app.get('/urls/:shortURL',(req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL : urlDatabase[req.params.shortURL]};
   res.render('urls_show', templateVars);
 });
 
 app.get('/hello', (req, resp) => {
-  resp.send('<html><body>Hello <b>World</b></body></html>\n')
+  resp.send('<html><body>Hello <b>World</b></body></html>\n');
 });
 
 //to listen to the port
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`)
+  console.log(`Example app listening on port ${PORT}!`);
 });
