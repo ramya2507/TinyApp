@@ -36,16 +36,38 @@ app.get('/', (req, res) => {
   res.send('Hello!');
 });
 
+//method to save the username and password registered
+app.post('/register',(req,res) => {
+  const id = generateRandomString();
+  for(let user in users){
+    if (users[user]['email'] === req.body.email){
+      res.status(400);
+      res.send('The email already exists');
+    } 
+  } 
+  if(req.body.email && req.body.password ){
+    users[id] = {
+      id,
+      email:req.body.email,
+      password:req.body.password
+    };
+  } else {
+    res.status(400);
+    res.send('Enter valid email and password');
+  }
+  console.log(users[id]);
+  res.cookie('userid',id);
+  res.redirect('/urls');  
+});
+
 //cookie to store username
 app.post('/login',(req,res) => {
-  const username = req.body.username;
-  res.cookie('username',username);
   res.redirect('/urls');
 });
 
 //method to clear cookie
 app.post('/logout',(req,res) => {
-  res.clearCookie('username');
+  res.clearCookie('userid');
   res.redirect('/urls');
 });
 
@@ -54,27 +76,20 @@ app.get('/register',(req,res) =>{
   res.render('registeration');
 })
 
-//method to save the username and password registered
-app.post('/register',(req,res) => {
-  const id = generateRandomString();
-  users[id] = {
-    id,
-    email:req.body.email,
-    password:req.body.password
-  };
-  console.log(users[id]);
-  res.cookie('userid',id);
-  res.redirect('/urls');  
-})
-
 app.get('/urls.json',(req,res) => {
   res.json(urlDatabase);
 });
 
 //to get all the short and long urls
 app.get('/urls', (req, res) => {
+  let userObj = {};
+  for(let user in users){
+    if(user === req.cookies['userid']){
+      userObj = users[user];
+    }
+  }
   const templateVars = {
-    username: req.cookies["username"],
+    user: userObj,
     urls: urlDatabase,
   };
   res.render('urls_index', templateVars);
@@ -82,8 +97,14 @@ app.get('/urls', (req, res) => {
 
 //to get a single short and long urls
 app.get('/urls/:shortURL', (req, res) => {
+  let userObj = {};
+  for(let user in users){
+    if(user === req.cookies['userid']){
+      userObj = users[user];
+    }
+  }
   const templateVars = {
-    username: req.cookies["username"],
+    user: userObj,
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
   };
@@ -115,10 +136,16 @@ app.post('/urls/:shortURL/delete',(req, res) => {
 
 //post method for updating
 app.post('/urls/:shortURL/update',(req, res) => {
+  let userObj = {};
+  for(let user in users){
+    if(user === req.cookies['userid']){
+      userObj = users[user];
+    }
+  }
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL : req.body.longURL,
-    username: req.cookies["username"],
+    user:userObj,  
   };
   res.render('urls_show', templateVars);
 });
