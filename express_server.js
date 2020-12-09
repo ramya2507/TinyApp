@@ -1,17 +1,31 @@
 const express = require('express');
 const app = express();
 const PORT = 8080; //default port
+const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-app.use(cookieParser());
+
 app.set('view engine','ejs'); //EJS as templating engine
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
+//object to store users information
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+};
 
 //function to generate random string for short url
 const generateRandomString = () => {
@@ -38,6 +52,19 @@ app.post('/logout',(req,res) => {
 //method to return registeration template
 app.get('/register',(req,res) =>{
   res.render('registeration');
+})
+
+//method to save the username and password registered
+app.post('/register',(req,res) => {
+  const id = generateRandomString();
+  users[id] = {
+    id,
+    email:req.body.email,
+    password:req.body.password
+  };
+  console.log(users[id]);
+  res.cookie('userid',id);
+  res.redirect('/urls');  
 })
 
 app.get('/urls.json',(req,res) => {
