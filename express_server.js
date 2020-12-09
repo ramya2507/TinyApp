@@ -29,11 +29,16 @@ app.post('/login',(req,res) => {
   res.redirect('/urls');
 });
 
-//cookie to clear cookie
+//method to clear cookie
 app.post('/logout',(req,res) => {
   res.clearCookie('username');
   res.redirect('/urls');
 });
+
+//method to return registeration template
+app.get('/register',(req,res) =>{
+  res.render('registeration');
+})
 
 app.get('/urls.json',(req,res) => {
   res.json(urlDatabase);
@@ -41,22 +46,22 @@ app.get('/urls.json',(req,res) => {
 
 //to get all the short and long urls
 app.get('/urls', (req, res) => {
-  const templateVars = { 
-                         username: req.cookies["username"], 
-                         urls: urlDatabase, 
-                        };
+  const templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase,
+  };
   res.render('urls_index', templateVars);
 });
 
 //to get a single short and long urls
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
-                         username: req.cookies["username"], 
-                         shortURL: req.params.shortURL, 
-                         longURL: urlDatabase[req.params.shortURL],
-                        };
+    username: req.cookies["username"],
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL],
+  };
   res.render('urls_show',templateVars);
-})
+});
 //Renders form to enter long url
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
@@ -72,24 +77,24 @@ app.post('/urls', (req, res) => {
 //redirecting to long URLs for the corresponding short URL
 app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL); 
+  res.redirect(longURL);
 });
 
 //to delete a url
 app.post('/urls/:shortURL/delete',(req, res) => {
   delete urlDatabase[req.params.shortURL];
-  res.redirect('/urls')
-})
+  res.redirect('/urls');
+});
 
-//post method for updating 
+//post method for updating
 app.post('/urls/:shortURL/update',(req, res) => {
-  const templateVars = { 
-                        shortURL: req.params.shortURL, 
-                        longURL : req.body.longURL,
-                        username: req.cookies["username"],
-                      };
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL : req.body.longURL,
+    username: req.cookies["username"],
+  };
   res.render('urls_show', templateVars);
-})
+});
 
 app.get('/hello', (req, res) => {
   res.send('<html><body>Hello <b>World</b></body></html>\n');
