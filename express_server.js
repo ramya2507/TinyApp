@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080; //default port
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const { validateEmailPassword } = require('./helper');
 
 app.set('view engine','ejs'); //EJS as templating engine
 app.use(bodyParser.urlencoded({extended: true}));
@@ -36,7 +37,23 @@ app.get('/', (req, res) => {
   res.send('Hello!');
 });
 
-//method to save the username and password registered
+//method to return registeration template
+app.get('/register',(req,res) =>{
+  const templateVars = { user: req.cookies['email'],};
+  res.render('registeration', templateVars);
+});
+
+//method to return login template
+app.get('/login',(req,res) =>{
+  const templateVars = { user: req.cookies['email'],};
+  res.render('login', templateVars);
+});
+
+app.get('/urls.json',(req,res) => {
+  res.json(urlDatabase);
+});
+
+//POST for registeration
 app.post('/register',(req,res) => {
   const id = generateRandomString();
   for(let user in users){
@@ -56,40 +73,32 @@ app.post('/register',(req,res) => {
     res.send('Enter valid email and password');
   }
   console.log(users[id]);
-  res.cookie('userid',id);
+  res.cookie('email',users[id]['email']); 
   res.redirect('/urls');  
 });
 
-//cookie to store username
+//POST for login
 app.post('/login',(req,res) => {
-  res.redirect('/urls');
+  const email = req.body.email;
+  const password = req.body.password;
+  if (validateEmailPassword(email, password, users)) {
+    res.cookie('email',email);
+    res.redirect('/urls'); 
+  }
+  res.status(400);
+  res.send('Invalid email')
 });
 
 //method to clear cookie
 app.post('/logout',(req,res) => {
-  res.clearCookie('userid');
+  res.clearCookie('email');
   res.redirect('/urls');
-});
-
-//method to return registeration template
-app.get('/register',(req,res) =>{
-  res.render('registeration');
-})
-
-app.get('/urls.json',(req,res) => {
-  res.json(urlDatabase);
 });
 
 //to get all the short and long urls
 app.get('/urls', (req, res) => {
-  let userObj = {};
-  for(let user in users){
-    if(user === req.cookies['userid']){
-      userObj = users[user];
-    }
-  }
   const templateVars = {
-    user: userObj,
+    user: req.cookies['email'],
     urls: urlDatabase,
   };
   res.render('urls_index', templateVars);
@@ -97,14 +106,8 @@ app.get('/urls', (req, res) => {
 
 //to get a single short and long urls
 app.get('/urls/:shortURL', (req, res) => {
-  let userObj = {};
-  for(let user in users){
-    if(user === req.cookies['userid']){
-      userObj = users[user];
-    }
-  }
   const templateVars = {
-    user: userObj,
+    user: req.cookies['email'],
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
   };
@@ -136,16 +139,10 @@ app.post('/urls/:shortURL/delete',(req, res) => {
 
 //post method for updating
 app.post('/urls/:shortURL/update',(req, res) => {
-  let userObj = {};
-  for(let user in users){
-    if(user === req.cookies['userid']){
-      userObj = users[user];
-    }
-  }
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL : req.body.longURL,
-    user:userObj,  
+    user:req.cookies['email'],  
   };
   res.render('urls_show', templateVars);
 });
