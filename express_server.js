@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080; //default port
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-const { validateEmailPassword, getUserId } = require('./helper');
+const { validateEmailPassword, getUserId, urlsForUser } = require('./helper');
 
 app.set('view engine','ejs'); //EJS as templating engine
 app.use(bodyParser.urlencoded({extended: true}));
@@ -18,8 +18,8 @@ const urlDatabase = {
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    email: "user1@example.com", 
+    password: "cat"
   },
  "user2RandomID": {
     id: "user2RandomID", 
@@ -99,11 +99,15 @@ app.post('/logout',(req,res) => {
 
 //to get all the short and long urls
 app.get('/urls', (req, res) => {
-  const templateVars = {
-    user: req.cookies['user'],
-    urls: urlDatabase,
-  };
-  res.render('urls_index', templateVars);
+  const user = (req.cookies['user']);
+  if(user){
+    const userUrls = urlsForUser(user.id,urlDatabase)
+    const templateVars = { user, urls: userUrls, };
+    res.render('urls_index', templateVars);
+  } 
+  const templateVars = { user:undefined, urls:undefined }
+  res.render('urls_index',templateVars);
+  
 });
 //Renders form to enter long url
 app.get('/urls/new', (req, res) => {
@@ -139,9 +143,18 @@ app.get('/urls/:shortURL', (req, res) => {
 
 //to redirect to urls after the creating a new URL
 app.post('/urls', (req, res) => {
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`urls/${shortURL}`);
+  const user = req.cookies['user'];
+  if (user) {
+    const longURL = req.body.longURL;
+    const shortURL = generateRandomString();
+    urlDatabase[shortURL] = {
+      longURL: longURL,
+      userID: user.id,
+    };
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.sendStatus(403);
+  }
 });
 
 //redirecting to long URLs for the corresponding short URL
