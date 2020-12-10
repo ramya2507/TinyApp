@@ -117,8 +117,7 @@ app.get('/urls/new', (req, res) => {
     res.render('urls_new',templateVars);
   } else {
     res.redirect('/login');
-  }
-    
+  }   
 });
 
 
@@ -170,18 +169,26 @@ app.get('/u/:shortURL', (req, res) => {
 
 //to delete a url
 app.post('/urls/:shortURL/delete',(req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect('/urls');
+  const user = req.cookies['user'];
+  const shortURL = req.params.shortURL;
+  if(user === urlDatabase[shortURL]['userID']){
+    delete urlDatabase[req.params.shortURL];
+    res.redirect('/urls');
+  } else {
+    res.status(400).send('Login first');
+  }
 });
 
 //post method for updating
 app.post('/urls/:shortURL/update',(req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL : req.body.longURL,
-    user: req.cookies['user'],  
-  };
-  res.render('urls_show', templateVars);
+  const user = req.cookies['user'];
+  const shortURL = req.params.shortURL;
+  if(user === urlDatabase[shortURL]['userID']){
+    const templateVars = {shortURL, user, longURL : req.body.longURL,};
+    res.render('urls_show', templateVars);
+  } else {
+    res.status(400).send('Login first');
+  }
 });
 
 app.get('/hello', (req, res) => {
