@@ -132,7 +132,9 @@ app.get('/urls/:shortURL', (req, res) => {
       longURL: urlDatabase[req.params.shortURL]['longURL'],
     };
     res.render('urls_show',templateVars);
-  } 
+  } else {
+    res.sendStatus(400);
+  }
 });
 
 //to redirect to urls after the creating a new URL
