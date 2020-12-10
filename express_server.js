@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080; //default port
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-const { validateEmailPassword, getUserId, urlsForUser } = require('./helper');
+const { generateRandomString,validateEmailPassword, getUserId, urlsForUser } = require('./helper');
 
 app.set('view engine','ejs'); //EJS as templating engine
 app.use(bodyParser.urlencoded({extended: true}));
@@ -102,9 +102,9 @@ app.get('/urls', (req, res) => {
     res.render('urls_index', templateVars);
   } 
   const templateVars = { user:undefined, urls:undefined }
-  res.render('urls_index',templateVars);
-  
+  res.render('urls_index',templateVars);  
 });
+
 //Renders form to enter long url
 app.get('/urls/new', (req, res) => {
   const user = req.cookies['user'];
@@ -115,7 +115,6 @@ app.get('/urls/new', (req, res) => {
     res.redirect('/login');
   }   
 });
-
 
 //to get a single short and long urls
 app.get('/urls/:shortURL', (req, res) => {
