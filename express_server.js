@@ -105,6 +105,12 @@ app.get('/urls', (req, res) => {
   };
   res.render('urls_index', templateVars);
 });
+//Renders form to enter long url
+app.get('/urls/new', (req, res) => {
+  const templateVars = { user: req.cookies['user'] };
+  res.render('urls_new',templateVars);  
+});
+
 
 //to get a single short and long urls
 app.get('/urls/:shortURL', (req, res) => {
@@ -114,10 +120,6 @@ app.get('/urls/:shortURL', (req, res) => {
     longURL: urlDatabase[req.params.shortURL],
   };
   res.render('urls_show',templateVars);
-});
-//Renders form to enter long url
-app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
 });
 
 //to redirect to urls after the creating a new URL
