@@ -3,7 +3,9 @@ const app = express();
 const PORT = 8080; //default port
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-const { generateRandomString,validateEmailPassword, getUserId, urlsForUser } = require('./helper');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const { generateRandomString, getUserId, urlsForUser, validateEmailPassword } = require('./helper');
 
 app.set('view engine','ejs'); //EJS as templating engine
 app.use(bodyParser.urlencoded({extended: true}));
@@ -19,12 +21,12 @@ const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user1@example.com", 
-    password: "cat"
+    password: bcrypt.hashSync("cat", saltRounds)
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dog", saltRounds)
   }
 };
 
@@ -48,6 +50,10 @@ app.get('/login',(req,res) =>{
 app.get('/urls.json',(req,res) => {
   res.json(urlDatabase);
 });
+app.get('/users.json',(req,res) => {
+  res.json(users);
+});
+
 
 //POST for registeration
 app.post('/register',(req,res) => {
@@ -59,10 +65,11 @@ app.post('/register',(req,res) => {
     } 
   } 
   if(req.body.email && req.body.password ){
+    const hashedPassword = bcrypt.hashSync(req.body.password, saltRounds);
     users[id] = {
       id,
       email:req.body.email,
-      password:req.body.password
+      password:hashedPassword,
     };
   } else {
     res.status(400);
@@ -179,8 +186,8 @@ app.post('/urls/:shortURL/update',(req, res) => {
   const user = req.cookies['user'];
   const shortURL = req.params.shortURL;
   if(user['id'] === urlDatabase[shortURL]['userID']){
-    const templateVars = {shortURL, user, longURL : req.body.longURL,};
-    res.render('urls_show', templateVars);
+    urlDatabase[shortURL]['longURL'] = req.body.longURL;
+    res.redirect('/urls');
   } else {
     res.status(400).send('Login first');
   }
