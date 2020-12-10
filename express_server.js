@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080; //default port
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-const { validateEmailPassword } = require('./helper');
+const { validateEmailPassword, getUserId } = require('./helper');
 
 app.set('view engine','ejs'); //EJS as templating engine
 app.use(bodyParser.urlencoded({extended: true}));
@@ -39,13 +39,13 @@ app.get('/', (req, res) => {
 
 //method to return registeration template
 app.get('/register',(req,res) =>{
-  const templateVars = { user: req.cookies['email'],};
+  const templateVars = { user: req.cookies['user'],};
   res.render('registeration', templateVars);
 });
 
 //method to return login template
 app.get('/login',(req,res) =>{
-  const templateVars = { user: req.cookies['email'],};
+  const templateVars = { user: req.cookies['user'],};
   res.render('login', templateVars);
 });
 
@@ -72,8 +72,9 @@ app.post('/register',(req,res) => {
     res.status(400);
     res.send('Enter valid email and password');
   }
-  console.log(users[id]);
-  res.cookie('email',users[id]['email']); 
+  const user = users[id];
+  console.log(user);
+  res.cookie('user',user);
   res.redirect('/urls');  
 });
 
@@ -82,7 +83,8 @@ app.post('/login',(req,res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (validateEmailPassword(email, password, users)) {
-    res.cookie('email',email);
+    let user = getUserId(email,users);
+    res.cookie('user',user);
     res.redirect('/urls'); 
   }
   res.status(400);
@@ -91,14 +93,14 @@ app.post('/login',(req,res) => {
 
 //method to clear cookie
 app.post('/logout',(req,res) => {
-  res.clearCookie('email');
+  res.clearCookie('user');
   res.redirect('/urls');
 });
 
 //to get all the short and long urls
 app.get('/urls', (req, res) => {
   const templateVars = {
-    user: req.cookies['email'],
+    user: req.cookies['user'],
     urls: urlDatabase,
   };
   res.render('urls_index', templateVars);
@@ -107,7 +109,7 @@ app.get('/urls', (req, res) => {
 //to get a single short and long urls
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
-    user: req.cookies['email'],
+    user: req.cookies['user'],
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
   };
@@ -142,7 +144,7 @@ app.post('/urls/:shortURL/update',(req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL : req.body.longURL,
-    user:req.cookies['email'],  
+    user: req.cookies['user'],  
   };
   res.render('urls_show', templateVars);
 });

@@ -7,4 +7,12 @@ const validateEmailPassword = function(email,password, database){
   return false;
 }
 
-module.exports = { validateEmailPassword };
+const getUserId = function(email, database){
+  for(let data in database){
+    if(database[data]['email'] === email){
+      return database[data];
+    }
+  }
+}
+
+module.exports = { validateEmailPassword, getUserId};
