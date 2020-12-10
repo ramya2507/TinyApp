@@ -28,10 +28,6 @@ const users = {
   }
 };
 
-//function to generate random string for short url
-const generateRandomString = () => {
-  return Math.random().toString(36).slice(2,8);
-};
 //to render root page
 app.get('/', (req, res) => {
   res.send('Hello!');
@@ -171,7 +167,7 @@ app.get('/u/:shortURL', (req, res) => {
 app.post('/urls/:shortURL/delete',(req, res) => {
   const user = req.cookies['user'];
   const shortURL = req.params.shortURL;
-  if(user === urlDatabase[shortURL]['userID']){
+  if(user['id'] === urlDatabase[shortURL]['userID']){
     delete urlDatabase[req.params.shortURL];
     res.redirect('/urls');
   } else {
@@ -183,7 +179,7 @@ app.post('/urls/:shortURL/delete',(req, res) => {
 app.post('/urls/:shortURL/update',(req, res) => {
   const user = req.cookies['user'];
   const shortURL = req.params.shortURL;
-  if(user === urlDatabase[shortURL]['userID']){
+  if(user['id'] === urlDatabase[shortURL]['userID']){
     const templateVars = {shortURL, user, longURL : req.body.longURL,};
     res.render('urls_show', templateVars);
   } else {
