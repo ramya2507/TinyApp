@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const { generateRandomString, getUserId, urlsForUser, validateEmailPassword } = require('./helper');
+const { generateRandomString, getUserByEmail, urlsForUser, validateEmailPassword } = require('./helper');
 
 app.set('view engine','ejs'); //EJS as templating engine
 app.use(bodyParser.urlencoded({extended: true}));
@@ -40,13 +40,13 @@ app.get('/', (req, res) => {
 
 //method to return registeration template
 app.get('/register',(req,res) =>{
-  const templateVars = { user: undefined,};
+  const templateVars = { user: users[req.session.user_id],};
   res.render('registeration', templateVars);
 });
 
 //method to return login template
 app.get('/login',(req,res) =>{
-  const templateVars = { user: undefined,};
+  const templateVars = { user: users[req.session.user_id],};
   res.render('login', templateVars);
 });
 
@@ -66,7 +66,7 @@ app.post('/register',(req,res) => {
       email:req.body.email,
       password:hashedPassword,
     };
-    req.session.user_id = user.id;
+    req.session.user_id = users[id]['id'];
     res.redirect('/urls'); 
   } else {
     res.status(400);
@@ -79,7 +79,7 @@ app.post('/login',(req,res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (validateEmailPassword(email, password, users)) {
-    let user = getUserId(email,users);
+    let user = getUserByEmail(email,users);
     req.session.user_id = user.id;
     res.redirect('/urls'); 
   }
@@ -118,14 +118,14 @@ app.get('/urls/new', (req, res) => {
 
 //to get a single short and long urls
 app.get('/urls/:shortURL', (req, res) => {
-  let user = users[req.session.user_id];
+  const user = users[req.session.user_id];
   if (!urlDatabase[req.params.shortURL]) {
     res.sendStatus(404);
   } else if(!user){
     res.redirect('/login');
   } else if(urlDatabase[req.params.shortURL].userID === user['id']) {
     const templateVars = {
-      user: req.session.user_id,
+      user,
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL]['longURL'],
     };
