@@ -7,7 +7,7 @@ const generateRandomString = () => {
 
 
 //function to get user id
-const getUserId = function(email, database){
+const getUserByEmail = function(email, database){
   for(let data in database){
     if(database[data]['email'] === email){
       return database[data];
@@ -39,4 +39,4 @@ const urlsForUser = function(id, database) {
   return userUrls;
 };
 
-module.exports = { generateRandomString, getUserId, validateEmailPassword,urlsForUser};
+module.exports = { generateRandomString, getUserByEmail, validateEmailPassword,urlsForUser};
