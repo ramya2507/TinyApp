@@ -35,7 +35,11 @@ const users = {
 
 //to render root page
 app.get('/', (req, res) => {
-  res.send('Hello!');
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 //method to return registeration template
