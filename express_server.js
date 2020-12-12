@@ -81,8 +81,9 @@ app.post('/login',(req,res) => {
     let user = getUserByEmail(email,users);
     req.session.user_id = user['id'];
     res.redirect('/urls');
+  } else {
+    res.status(400).send('Invalid email');
   }
-  res.status(400).send('Invalid email');
 });
 
 //method to clear cookie
@@ -95,12 +96,13 @@ app.post('/logout',(req,res) => {
 app.get('/urls', (req, res) => {
   const user = users[req.session.user_id];
   if (user) {
-    const userUrls = urlsForUser(user['id'], urlDatabase);
+    const userUrls = urlsForUser(user.id, urlDatabase);
     const templateVars = { user, urls: userUrls, };
     res.render('urls_index', templateVars);
+  } else {
+    const templateVars = { user:undefined, urls:undefined };
+    res.render('urls_index',templateVars);
   }
-  const templateVars = { user:undefined, urls:undefined };
-  res.render('urls_index',templateVars);
 });
 
 //Renders form to enter long url
